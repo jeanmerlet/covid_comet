@@ -1,0 +1,5 @@
+# job script stuff
+*.err
+*.out
+*.sbatch
+*.lsf
