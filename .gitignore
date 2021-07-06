@@ -3,3 +3,7 @@
 *.out
 *.sbatch
 *.lsf
+
+# CoMet output
+*.bin
+*.txt

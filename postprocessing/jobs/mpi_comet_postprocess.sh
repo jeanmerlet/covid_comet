@@ -22,8 +22,8 @@ for BATCH in $(seq 1 $NUM_BATCHES) ; do
         -N $NUM_NODES_PER_BATCH \
         -t 36:00:00 \
         -J comet_post \
-        -o ./logs/comet_post_single.o%J \
-        -e ./logs/comet_post_single.e%J \
+        -o ./logs/comet_post_single.J%.out \
+        -e ./logs/comet_post_single.J%.err \
         ./comet_srun.sh
 
 done
