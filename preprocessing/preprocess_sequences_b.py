@@ -7,7 +7,7 @@ import time
 
 root_data_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/original'
 root_in_dir = os.path.join(root_data_dir, 'preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665')
-root_out_dir = os.path.join(root_in_dir, 'mutation_count_filtered_100')
+root_out_dir = os.path.join(root_in_dir, 'ns-as-1s_mutation_count_filtered_100')
 counts_path = os.path.join(root_in_dir, 'mutation_counts/combined_mutation_counts.tsv')
 try:
     os.mkdir(root_out_dir)
@@ -19,7 +19,7 @@ nt_conversions = {'a': 'a', 'c': 'c', 'g': 'g', 't': 't', '-': '-', 'n': 'n',
                   'w': 'n', 'b': 'n', 'd': 'n', 'h': 'n', 'v': 'n'}
 nt_conversions = pd.Series(nt_conversions)
 
-encoding_scheme = {'n': 'A\tA\tA\tA\tA',
+encoding_scheme = {'n': 'T\tT\tT\tT\tT',
                    'a': 'A\tA\tA\tA\tT',
                    't': 'A\tA\tA\tT\tA',
                    'c': 'A\tA\tT\tA\tA',
@@ -94,6 +94,7 @@ for i, seq_set in enumerate(tsv_names):
             seq = seq[pass_idx]
             seq_header = None
             if first_seq:
+                first_seq = False
                 # check it's the alignment sequence
                 assert '_045512.2' in seq_id
                 align_seq = seq.copy()
@@ -101,7 +102,8 @@ for i, seq_set in enumerate(tsv_names):
                 # and doesn't have the same header pattern
                 if i == 0:
                     seq_header = '0\t000000000\t0\t0'
-                first_seq = False
+                else:
+                    continue
             seq = nt_conversions[seq].values
             seq = check_mutations(seq, passed_mut_counts, align_seq)
             if not seq_header:

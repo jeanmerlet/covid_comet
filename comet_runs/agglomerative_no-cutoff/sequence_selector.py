@@ -3,14 +3,14 @@ import re
 import pandas as pd
 import numpy as np
 
-tped_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/original/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/mutation_count_filtered_100'
+tped_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/original/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/ns-as-1s_mutation_count_filtered_100'
 sequence_nums_path =  os.path.join(tped_dir, 'sequence_nums.tsv')
 out_dir = os.path.join(tped_dir, 'small_combined')
 try:
     os.mkdir(out_dir)
 except OSError:
     pass
-num_seqs_per_file = 2
+num_seqs_per_file = 40
 out_path = os.path.join(out_dir, 'seq_from_each_' + str(num_seqs_per_file) + '.tped')
 
 tped_paths = []
