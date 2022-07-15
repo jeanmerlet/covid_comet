@@ -3,10 +3,9 @@ import argparse
 import re
 import os
 
-in_file_path = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/tests/small_run_40_from_each_hist-10000_cutoffs-0-0-0-0/out_0.bin'
-#in_file_path = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/tests/small_run_40_from_each_hist-10000_cutoffs-4-4-4-2/out_0.bin'
+in_file_path = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/tests/small_run_40_from_each_hist-10000_llhh2/out_0.bin'
 tped_prefix = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/old/original/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/ns-as-1s_mutation_count_filtered_100/small_combined/seq_from_each_40'
-comet_tools_dir = '/gpfs/alpine/syb105/proj-shared/Personal/jmerlet/other_tools/comet_devel/genomics_gpu/tools'
+comet_tools_dir = "/gpfs/alpine/syb105/proj-shared/Personal/jmerlet/other_tools/comet_devel/genomics_gpu/tools"
 num_way = '2'
 
 def comet_postprocess(in_file):

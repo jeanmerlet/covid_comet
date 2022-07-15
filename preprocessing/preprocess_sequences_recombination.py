@@ -5,10 +5,9 @@ import pandas as pd
 from mpi4py import MPI
 import time
 
-root_in_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2022_06_02/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665'
-root_out_dir = os.path.join(root_in_dir, 'ns-as-0s_mutation_count_filtered_1000')
-#counts_path = os.path.join(root_in_dir, 'mutation_counts/combined_mutation_counts.tsv')
-counts_path = os.path.join(root_in_dir, 'mutation_counts/combined_mutation_counts_1000.tsv')
+root_in_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2021_09_30/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665'
+root_out_dir = os.path.join(root_in_dir, 'lv-10-to-ref_mutation-count-100')
+counts_path = os.path.join(root_in_dir, 'mutation_counts/combined_mutation_counts.tsv')
 try:
     os.mkdir(root_out_dir)
 except OSError:
@@ -18,14 +17,6 @@ nt_conversions = {'a': 'a', 'c': 'c', 'g': 'g', 't': 't', '-': '-', 'n': 'n',
                   'u': 'n', 'r': 'n', 'y': 'n', 'k': 'n', 'm': 'n', 's': 'n',
                   'w': 'n', 'b': 'n', 'd': 'n', 'h': 'n', 'v': 'n'}
 nt_conversions = pd.Series(nt_conversions)
-
-encoding_scheme = {'n': 'A\tA\tA\tA\tA',
-                   'a': 'A\tA\tA\tA\tT',
-                   't': 'A\tA\tA\tT\tA',
-                   'c': 'A\tA\tT\tA\tA',
-                   'g': 'A\tT\tA\tA\tA',
-                   '-': 'T\tA\tA\tA\tA'}
-encoding_scheme = pd.Series(encoding_scheme)
 
 mutation_counts = pd.read_csv(counts_path, sep='\t', index_col=0, header=None)
 pass_idx = mutation_counts.loc['valid', :].values == 'True'
@@ -47,11 +38,13 @@ def check_mutations(seq, mut_counts, align_seq):
     mutation_idx = np.arange(len(mutation_idx))[mutation_idx]
     for idx in mutation_idx:
         nt = seq[idx]
-        if nt != 'n' and mut_counts.loc[nt, idx] < 100:
+        # only convert to align seq if < 10 muts per nt
+        if nt != 'n' and mut_counts.loc[nt, idx] < 10:
             seq[idx] = align_seq[idx]
     return seq
 
 def create_seq_header(seq_id):
+    #epi_id = re.search('\|.+_(\d+)\|.*$', seq_id).groups()[0]
     epi_id = re.search('\|.+_(\d+)$', seq_id).groups()[0]
     id_length = len(epi_id)
     if id_length < 9:
@@ -65,11 +58,6 @@ def create_seq_header(seq_id):
     seq_header = '0\t' + epi_id + '\t0\t0'
     return seq_header
 
-def convert_bases_to_tped_bin(seq_bases, encoding_scheme):
-    seq_bases = encoding_scheme[seq_bases].values
-    seq_bases = '\t'.join(seq_bases)
-    return seq_bases
-
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
@@ -79,11 +67,11 @@ for i, seq_set in enumerate(tsv_names):
     # distribute across ranks
     if i % size != rank: continue
     _, seq_set_name = os.path.split(seq_set)
-    out_name = os.path.join(root_out_dir, 'mutation-filtered_' + seq_set_name[:-4] + '.tped')
+    out_name = os.path.join(root_out_dir, 'mutation-filtered_' + seq_set_name[:-4] + '.tsv')
     # don't redo a file if it's already done
     if os.path.isfile(out_name): continue
     print(f'filtering {seq_set_name} ({i+1}/{num_sets})')
-    # record time for first file
+    # record time for largest file
     if i == 0: start_time = time.time()
 
     first_seq = True
@@ -109,7 +97,7 @@ for i, seq_set in enumerate(tsv_names):
             if not seq_header:
                 seq_header = create_seq_header(seq_id)
             if seq_header:
-                seq = convert_bases_to_tped_bin(seq, encoding_scheme)
+                seq = '\t'.join(seq)
                 seq = seq_header + '\t' + seq + '\n'
                 with open(out_name, 'a') as out_file:
                     out_file.write(seq)

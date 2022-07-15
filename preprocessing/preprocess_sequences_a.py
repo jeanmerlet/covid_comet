@@ -15,11 +15,13 @@ codes = {'a': 0, 'c': 0, 'g': 0, 't': 0,
 gpfs_root = '/gpfs/alpine/syb105/proj-shared'
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', '--data', default=os.path.join(gpfs_root, 'Projects/GeoBio_CoMet/data/original'),
+parser.add_argument('-d', '--data', default=os.path.join(gpfs_root, 'Projects/GeoBio_CoMet/data/aligned/sequences_2022_06_02/uniq_ids'),
                     help='path to dataset')
 parser.add_argument('-p', '--hosts', default=os.path.join(gpfs_root,
-                    'Personal/jmerlet/projects/sars_cov_2_geo/data/metadata/non_human_hosts.tsv'),
+                    'Projects/GeoBio_CoMet/data/metadata/metadata_2022_06_02/non-human_hosts.tsv'),
                     help='path to non-human hosts metadata')
+parser.add_argument('-m', '--meta', default=os.path.join(gpfs_root, 'Projects/GeoBio_CoMet/data/metadata/metadata_2022_06_02/metadata.tsv'),
+                    help='path to metadata')
 parser.add_argument('-g', '--d_cutoff', type=int, default=1000,
                     help='maximum number of indeterminate gaps in a sequence')
 parser.add_argument('-n', '--n_cutoff', type=float, default=0.01,
@@ -48,6 +50,7 @@ except OSError:
     pass
 
 non_human = pd.read_csv(args.hosts, sep='\t', header=0, index_col=0).index.values
+meta = pd.read_csv(args.meta, sep='\t', header=0, index_col=0).index.values
 
 fasta_names = []
 for r, d, f in os.walk(args.data):
@@ -114,8 +117,8 @@ for i, seq_set in enumerate(fasta_names):
     # distribute across ranks
     if i % size != rank: continue
     _, seq_set_name = os.path.split(seq_set)
-    # time the largest file
-    if re.search('04-12-2021', seq_set_name): total_start = time.time()
+    # time the first file
+    if i == 0: total_start = time.time()
     out_path = os.path.join(out_dir, 'preprocessed_' + seq_set_name[:-6] + '.tsv')
     log_path = os.path.join(log_dir, seq_set_name[:-6] + '_preprocessing_log.txt')
     mutation_counts_out_path = os.path.join(mut_dir, seq_set_name[:-6] + '_mutation_counts.tsv')
@@ -161,4 +164,4 @@ for i, seq_set in enumerate(fasta_names):
                 nt_counts, seq_length, wrong_code = count_bases(nt_counts, line, seq_length, wrong_code)
 
     diffs.to_csv(mutation_counts_out_path, sep='\t', header=False)
-    if re.search('04-12-2021', seq_set_name): print(f'total time: {time.time() - total_start}')
+    if i == 0: print(f'total time: {time.time() - total_start}')

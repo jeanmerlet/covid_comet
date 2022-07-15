@@ -22,7 +22,6 @@ with open(tped_path) as in_file:
         header, seq = line[:4], line[4:]
         seq_id = header[1]
         if seq_id in seq_ids['name'].values:
-            new_seq = []
             seq = ['\t'.join(seq[i*5:i*5+5]) for i in range(len(seq) // 5)]
             seq = decoding_scheme[seq]
             cluster = seq_ids.loc[:, 'mcl_cluster'].values[seq_ids['name'] == seq_id][0]

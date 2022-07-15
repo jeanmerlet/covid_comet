@@ -1,0 +1,70 @@
+import os, re, time
+import pandas as pd
+import numpy as np
+from mpi4py import MPI
+
+clusters_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2021_09_30/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/ns-as-1s_mutation_count_filtered_100/combined_all_LL-3.1990/edge_list/hip_mcl'
+seq_data_path = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2021_09_30/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/ns-as-1s_mutation_count_filtered_100/combined_all.tped'
+
+seq_ids_path = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2021_09_30/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/ns-as-1s_mutation_count_filtered_100/seq_ids.txt'
+seq_ids = pd.read_csv(seq_ids_path, header=None, index_col=None, dtype=str).values
+seq_row_idxs = {}
+for i, seq_id in enumerate(seq_ids):
+    seq_row_idxs[seq_id[0]] = i
+
+clusters_paths = []
+for r, d, f in os.walk(clusters_dir):
+    for clusters_path in f:
+        if 'variant' not in clusters_path:
+            if 'vector' not in clusters_path:
+                clusters_paths.append(os.path.join(r, clusters_path))
+clusters_paths.sort()
+
+decoding_scheme = {'A': 0,
+                   'T': 1}
+decoding_scheme = pd.Series(decoding_scheme)
+
+def seq_ids_to_mean_vector(seq_ids, seq_data_path):
+    num_seqs = len(seq_ids)
+    cum_sum = np.zeros(73965, dtype=int)
+    idxs_to_read = []
+    for i, seq_id in enumerate(seq_ids):
+        # seq_is have _A appended to the end
+        idxs_to_read.append(seq_row_idxs[seq_id[:-2]])
+    with open(seq_data_path) as seq_data:
+        for i, line in enumerate(seq_data):
+            if i % 10000 == 0: print(i)
+            if i not in idxs_to_read:
+                continue
+            else:
+                seq = line.strip().split('\t')[4:]
+                seq = decoding_scheme[seq].values.astype(int)
+                cum_sum = np.add(cum_sum, seq)
+
+    mean_vector = cum_sum / num_seqs
+    mean_vector = list(mean_vector)
+    mean_vector = [str(round(x, 2)) for x in mean_vector]
+    return mean_vector
+
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+for i, clusters_path in enumerate(clusters_paths):
+    # distribute across ranks
+    if i % size != rank: continue
+    _, name = os.path.split(clusters_path)
+    print(f'cluster {name} is being averaged by job {rank}')
+    inflation = re.search('\d\.\d', name).group(0)
+    if inflation == '1.2':
+        start = time.time()
+    out_path = os.path.join(clusters_dir, 'mean_vectors-' + inflation)
+    with open(clusters_path, 'r') as clusters:
+        for j, cluster in enumerate(clusters):
+            seq_ids = cluster.strip().split(' ')
+            mean_vector = seq_ids_to_mean_vector(seq_ids, seq_data_path)
+            with open(out_path, 'a') as out_clusters:
+                out_clusters.write('\t'.join(mean_vector) + '\n')
+    if inflation == '1.2':
+        print(time.time() - start)

@@ -4,9 +4,11 @@ import argparse
 import re
 import os
 
-data_dir = "/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/count_filtered_0.01N_1000D/trimmed_ends_first_primer_overlap/mutation_count_filtered_100/comet_tped/combined/comet_output"
-tped_prefix = "/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/count_filtered_0.01N_1000D/trimmed_ends_first_primer_overlap/mutation_count_filtered_100/comet_tped/combined/combined_all"
-comet_tools_dir = "/gpfs/alpine/syb105/proj-shared/Personal/jmerlet/other_tools/comet/genomics_gpu/tools"
+# directory
+data_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2021_09_30/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/ns-as-1s_mutation_count_filtered_100/frontier_run_out'
+# filename
+tped_prefix = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2021_09_30/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/ns-as-1s_mutation_count_filtered_100/combined_all'
+comet_tools_dir = '/gpfs/alpine/syb105/proj-shared/Personal/jmerlet/other_tools/comet_devel/genomics_gpu/tools'
 num_way = '2'
 
 parser = argparse.ArgumentParser()
