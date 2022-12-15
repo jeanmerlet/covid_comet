@@ -5,10 +5,12 @@ import pandas as pd
 from mpi4py import MPI
 import time
 
-root_in_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2022_06_02/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665'
-root_out_dir = os.path.join(root_in_dir, 'ns-as-0s_mutation_count_filtered_1000')
-#counts_path = os.path.join(root_in_dir, 'mutation_counts/combined_mutation_counts.tsv')
-counts_path = os.path.join(root_in_dir, 'mutation_counts/combined_mutation_counts_1000.tsv')
+mutation_threshold = 100
+
+root_in_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2022_06_02/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/usa_mex_can_500k'
+root_in_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2022_06_02/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/usa_mex_can_250k'
+root_out_dir = os.path.join(root_in_dir, f'ns-as-0s_mutation_count_filtered_{mutation_threshold}')
+counts_path = os.path.join(root_in_dir, f'mutation_counts/combined_mutation_counts_{mutation_threshold}.tsv')
 try:
     os.mkdir(root_out_dir)
 except OSError:
@@ -36,7 +38,8 @@ passed_mut_counts.columns = np.arange(len(passed_mut_counts.columns))
 tsv_names = []
 for r, d, f in os.walk(root_in_dir):
     for tsv in f:
-        if re.search('^preprocessed.*tsv$', tsv):
+        #if re.search('^preprocessed.*tsv$', tsv):
+        if re.search('^na-250k_preprocessed.*tsv$', tsv):
             tsv_names.append(os.path.join(r, tsv))
 
 tsv_names.sort()
