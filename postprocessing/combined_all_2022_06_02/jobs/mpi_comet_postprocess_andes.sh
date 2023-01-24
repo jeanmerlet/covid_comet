@@ -18,7 +18,7 @@ for BATCH in $(seq 1 $NUM_BATCHES) ; do
 
     export CURRENT_BATCH=$BATCH
     sbatch \
-        -A syb108 \
+        -A syb111 \
         -N $NUM_NODES_PER_BATCH \
         -t 8:00:00 \
         -J comet_post \

@@ -6,8 +6,7 @@ output_dir    = sys.argv[2]
 command_dir   = sys.argv[3]
 
 # parameters
-#inflations = [1.2, 1.5, 2.0, 4.0, 8.0]
-inflations = [1.1]
+inflations = [1.2, 1.5, 2.0]
 nodes = 256
 wall_time = '12:00'
 
@@ -21,7 +20,7 @@ for inflation in inflations:
     lines = [
         '#!/bin/bash\n'
         f'#BSUB -W {wall_time}\n',
-        '#BSUB -P SYB108\n',
+        '#BSUB -P SYB111\n',
         f'#BSUB -nnodes {nodes}\n',
         '#BSUB -J hipmcl\n',
         '#BSUB -o ./logs/hipmcl.%J.out\n',
