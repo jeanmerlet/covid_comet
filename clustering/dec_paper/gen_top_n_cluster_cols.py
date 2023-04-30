@@ -5,11 +5,13 @@ import os, re
 num_clusters = 'all'
 clusters_filename = 'clusters_inflation-1.2.tsv'
 
-clusters_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2021_09_30/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/ns-as-1s_mutation_count_filtered_100/frontier_run_out/threshold_3.1997/edge_list/hip_mcl'
+#clusters_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2021_09_30/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/ns-as-1s_mutation_count_filtered_100/frontier_run_out/threshold_3.1997/edge_list/hip_mcl'
+clusters_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2022_06_02/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/ns-as-0s_mutation_count_filtered_100/thresh_run_HH-0.19991/hip_mcl'
 clusters_path = os.path.join(clusters_dir, clusters_filename)
 out_path = os.path.join(clusters_dir, 'top-' + str(num_clusters) + '_' + clusters_filename)
 
-metadata_path = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/metadata/metadata_2021_09_30/metadata.tsv'
+#metadata_path = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/metadata/metadata_2021_09_30/metadata.tsv'
+metadata_path = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/metadata/metadata_2022_06_02/metadata.tsv'
 meta = pd.read_csv(metadata_path, sep='\t', low_memory=False)
 meta_seq_id_col = []
 epi_isl_ids = meta.loc[:, 'Accession ID'].values
