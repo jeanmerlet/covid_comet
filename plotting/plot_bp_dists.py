@@ -41,11 +41,12 @@ def get_primer_locs(path, bin_size):
     reverse_left = primers.iloc[1::2, 1]
     return forward_right.values, reverse_left.values
 
-def generate_per_nt_code_bar_plots(count_sums, bin_size, start=0, end=30000, primers=None):
+def generate_per_nt_code_bar_plots(count_sums, bin_size=10, start=0, end=30000, primers=None):
     for i in range(count_sums.shape[1]):
         title = count_sums.columns[i].upper()
-        if title != '-': continue
+        if title != 'N': continue
         out_path = os.path.join(plot_dir, 'log_binned-' + title + f'-counts_bin-size-10_{start}-to-{end}-pos.png')
+        #out_path = os.path.join(plot_dir, 'binned-' + title + f'-counts_bin-size-10_{start}-to-{end}-pos_for-slides.png')
         start = int(start / bin_size)
         end = int(end / bin_size)
         fig, ax = plt.subplots(figsize=(16, 8))
@@ -57,17 +58,24 @@ def generate_per_nt_code_bar_plots(count_sums, bin_size, start=0, end=30000, pri
         #ax.set_xlabel('Position')
         # if large numbers
         xticklabels = [str(round(xticks[i] / 100, 2)) for i in range(len(xticks))]
-        ax.set_xlabel('Position (thousands)')
-        ax.set_xticks(xticks)
-        ax.set_xticklabels(xticklabels, size=8)
+        #ax.set_xlabel('Position (thousands)')
+        #ax.set_xticks(xticks)
+        #ax.set_xticklabels(xticklabels, size=8)
         # y axis
-        ax.set_ylabel('(log) Count')
+        ax.set_ylabel('Number of sequences (log)', fontsize=28)
         ax.set_yscale('log')
-        ax.set_yticks(np.logspace(2, 7, 6))
-        ax.set_yticklabels([f'$10^{j}$' for j in range(2, 8)])
+        #ax.set_yticks(np.logspace(2, 7, 6))
+        #ax.set_yticklabels([f'$10^{j}$' for j in range(2, 8)[2, 4, 7]], fontsize=21)
+        logspace = np.logspace(1, 7, 7)
+        ax.set_yticks([logspace[0], logspace[3], logspace[6]])
+        ax.set_yticklabels([f'$10^{j}$' for j in [2, 4, 6]], fontsize=21)
+        ax.tick_params(width=2, length=4)
+        # remove ticks here
+        ax.set_xticks([])
+        #ax.set_yticks([])
         # other
-        ax.grid(which='both', axis='y')
-        ax.set_title(f'Binned Total for {title} Across all Sequences: {start * bin_size}bp to {end * bin_size}bp')
+        #ax.grid(which='both', axis='y')
+        #ax.set_title(f'Binned Total for {title} Across all Sequences: {start * bin_size}bp to {end * bin_size}bp')
         if primers:
             for_locs, rev_locs = get_primer_locs(primers, 10)
             for j in range(len(for_locs)):
@@ -81,6 +89,8 @@ def generate_per_nt_code_bar_plots(count_sums, bin_size, start=0, end=30000, pri
 
 # bin_size corresponds to the size of the resolution of the bins of count_sums
 # start and end correspond to actual positions in the genome (no bins)
+
 #generate_per_nt_code_bar_plots(count_sums, bin_size=10, start=28400, end=30000, primers=primer_path)
+generate_per_nt_code_bar_plots(count_sums)
 
 

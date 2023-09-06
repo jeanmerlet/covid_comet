@@ -5,7 +5,7 @@ import os
 
 data_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2022_06_02/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/usa_mex_can_250k/mutation_counts'
 
-mutation_cutoff = 100
+mutation_cutoff = 10000
 
 tsv_names = []
 for r, d, f in os.walk(data_dir):
