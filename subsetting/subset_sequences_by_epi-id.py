@@ -4,9 +4,22 @@ import numpy as np
 import pandas as pd
 from mpi4py import MPI
 import time
+import argparse
 
-root_in_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2022_06_02/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665'
-root_out_dir = os.path.join(root_in_dir, f'usa_mex_can_250k')
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--root_in_dir', type=str, required=True)
+parser.add_argument('-n', '--name', type=str, required=True)
+parser.add_argument('-w', '--seq_id_whitelist_path', type=str, required=True)
+parser.add_argument('-p', '--file_prefix', type=str, required=True)
+
+args = parser.parse_args()
+root_in_dir = args.root_in_dir
+name = args.name
+seq_id_whitelist_path = args.seq_id_whitelist_path
+file_prefix = args.file_prefix
+
+
+root_out_dir = os.path.join(root_in_dir, name)
 mut_dir = os.path.join(root_out_dir, 'mutation_counts')
 try:
     os.mkdir(root_out_dir)
@@ -17,7 +30,6 @@ try:
 except OSError:
     pass
 
-seq_id_whitelist_path = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/metadata/metadata_2022_06_02/usa_can_mex_epi-ids_250k.txt'
 seq_id_whitelist = np.squeeze(pd.read_csv(seq_id_whitelist_path).values)
 
 tsv_names = []
@@ -47,7 +59,7 @@ for i, seq_set in enumerate(tsv_names):
     # distribute across ranks
     if i % size != rank: continue
     _, seq_set_name = os.path.split(seq_set)
-    out_name = os.path.join(root_out_dir, 'na-250k_' + seq_set_name)
+    out_name = os.path.join(root_out_dir, file_prefix + '_' + seq_set_name)
     mutation_counts_out_path = os.path.join(mut_dir, 'mutation_counts_' + seq_set_name)
     # don't redo a file if it's already done
     if os.path.isfile(out_name): continue
@@ -55,6 +67,7 @@ for i, seq_set in enumerate(tsv_names):
     # record time for first file
     if i == 0: start_time = time.time()
     first_seq = True
+    break
     with open(seq_set) as in_file:
         for line in in_file:
             # wuhan refseq is first seq and doesn't have an epi-id
