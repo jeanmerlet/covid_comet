@@ -63,11 +63,10 @@ for i, seq_set in enumerate(tsv_names):
     mutation_counts_out_path = os.path.join(mut_dir, 'mutation_counts_' + seq_set_name)
     # don't redo a file if it's already done
     if os.path.isfile(out_name): continue
-    print(f'subsetting {seq_set_name} ({i+1}/{num_sets})')
+    print(f'subsetting {seq_set_name} ({i+1}/{num_sets})', flush=True)
     # record time for first file
     if i == 0: start_time = time.time()
     first_seq = True
-    break
     with open(seq_set) as in_file:
         for line in in_file:
             # wuhan refseq is first seq and doesn't have an epi-id
@@ -80,7 +79,7 @@ for i, seq_set in enumerate(tsv_names):
                 # also create array to count mutations
                 row_names = ['a', 'c', 'g', 't', '-']
                 length = len(seq)
-                data = np.zeros((len(row_names), length), dtype=np.int)
+                data = np.zeros((len(row_names), length), dtype=int)
                 diffs = pd.DataFrame(data=data, index=row_names, columns=None)
                 align_seq = seq.copy()
             # otherwise, write subsampled seqs
@@ -95,4 +94,4 @@ for i, seq_set in enumerate(tsv_names):
                 # for mutation counts
                 diffs = count_seq_differences(diffs, row_names, align_seq, seq, length)
     diffs.to_csv(mutation_counts_out_path, sep='\t', header=False)
-    if i == 0: print(f'\ntotal time: {time.time() - start_time}')
+    if i == 0: print(f'\ntotal time: {time.time() - start_time}', flush=True)
