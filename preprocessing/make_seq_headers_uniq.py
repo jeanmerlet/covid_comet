@@ -27,6 +27,8 @@ def get_non_uniq_headers(metadata):
     non_uniq_names = names[counts > 1]
     return non_uniq_names
 
+
+#TODO: count how many aren't unique and save them somewhere
 def fix_seq_headers(seq_set, out_path, non_uniq_names, acc_ids):
     non_uniq = False
     valid_headers = acc_ids.index.values

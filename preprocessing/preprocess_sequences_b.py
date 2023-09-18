@@ -1,14 +1,21 @@
-import os
-import re
 import numpy as np
 import pandas as pd
 from mpi4py import MPI
-import time
+import argparse
+import os, re, time
 
-mutation_threshold = 100
 
-root_in_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2022_06_02/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/usa_mex_can_500k'
-root_in_dir = '/gpfs/alpine/syb105/proj-shared/Projects/GeoBio_CoMet/data/aligned/sequences_2022_06_02/uniq_ids/preprocessed_d-cutoff_1000_n-cutoff_0.01_pos_342-29665/usa_mex_can_250k'
+# arpgarse
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--root_in_dir', type=str, required=True)
+parser.add_argument('-m', '--mutation_threshold', type=int, required=False, default=100)
+
+args = parser.parse_args()
+root_in_dir = args.root_in_dir
+mutation_threshold = args.mutation_threshold
+
+
+# dirs
 root_out_dir = os.path.join(root_in_dir, f'ns-as-0s_mutation_count_filtered_{mutation_threshold}')
 counts_path = os.path.join(root_in_dir, f'mutation_counts/combined_mutation_counts_{mutation_threshold}.tsv')
 try:
@@ -16,6 +23,8 @@ try:
 except OSError:
     pass
 
+
+# setup
 nt_conversions = {'a': 'a', 'c': 'c', 'g': 'g', 't': 't', '-': '-', 'n': 'n',
                   'u': 'n', 'r': 'n', 'y': 'n', 'k': 'n', 'm': 'n', 's': 'n',
                   'w': 'n', 'b': 'n', 'd': 'n', 'h': 'n', 'v': 'n'}
@@ -35,15 +44,12 @@ passed_mut_counts = mutation_counts.loc[:, pass_idx]
 passed_mut_counts = passed_mut_counts.iloc[:-1, :].astype('float').astype(np.int32)
 passed_mut_counts.columns = np.arange(len(passed_mut_counts.columns))
 
-tsv_names = []
-for r, d, f in os.walk(root_in_dir):
-    for tsv in f:
-        #if re.search('^preprocessed.*tsv$', tsv):
-        if re.search('^na-250k_preprocessed.*tsv$', tsv):
-            tsv_names.append(os.path.join(r, tsv))
 
-tsv_names.sort()
-num_sets = len(tsv_names)
+# get input tsv paths
+tsv_paths = [os.path.join(root_in_dir, name) for name in os.listdir(root_in_dir) if '.tsv' in name]
+tsv_paths.sort()
+num_sets = len(tsv_paths)
+
 
 def check_mutations(seq, mut_counts, align_seq):
     mutation_idx = seq != align_seq
@@ -73,11 +79,11 @@ def convert_bases_to_tped_bin(seq_bases, encoding_scheme):
     seq_bases = '\t'.join(seq_bases)
     return seq_bases
 
+
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
 
-start = time.time()
 for i, seq_set in enumerate(tsv_names):
     # distribute across ranks
     if i % size != rank: continue
@@ -102,19 +108,20 @@ for i, seq_set in enumerate(tsv_names):
                 assert '_045512.2' in seq_id
                 align_seq = seq.copy()
                 # wuhan sequence is duplicated in each file
-                # and doesn't have the same header pattern
+                # and doesn't have the same header pattern.
+                # only put it in the first file and convert
+                # to the same header format as the other seqs
                 if i == 0:
                     seq_header = '0\t000000000\t0\t0'
                 else:
                     continue
+            else:
+                seq_header = create_seq_header(seq_id)
             seq = nt_conversions[seq].values
             seq = check_mutations(seq, passed_mut_counts, align_seq)
-            if not seq_header:
-                seq_header = create_seq_header(seq_id)
-            if seq_header:
-                seq = convert_bases_to_tped_bin(seq, encoding_scheme)
-                seq = seq_header + '\t' + seq + '\n'
-                with open(out_name, 'a') as out_file:
-                    out_file.write(seq)
+            seq = convert_bases_to_tped_bin(seq, encoding_scheme)
+            seq = seq_header + '\t' + seq + '\n'
+            with open(out_name, 'a') as out_file:
+                out_file.write(seq)
 
     if i == 0: print(f'\ntotal time: {time.time() - start_time}')
