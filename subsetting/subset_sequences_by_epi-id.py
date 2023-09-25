@@ -30,6 +30,7 @@ try:
 except OSError:
     pass
 
+
 seq_id_whitelist = np.squeeze(pd.read_csv(seq_id_whitelist_path).values)
 
 tsv_names = []
@@ -39,6 +40,7 @@ for r, d, f in os.walk(root_in_dir):
             tsv_names.append(os.path.join(r, tsv))
 tsv_names.sort()
 num_sets = len(tsv_names)
+
 
 #remake mutation counts
 def count_seq_differences(diffs, nt_codes_to_check, seq1, seq2, length):
@@ -56,22 +58,22 @@ rank = comm.Get_rank()
 
 start = time.time()
 for i, seq_set in enumerate(tsv_names):
+    if i != 0: continue
     # distribute across ranks
     if i % size != rank: continue
     _, seq_set_name = os.path.split(seq_set)
     out_name = os.path.join(root_out_dir, file_prefix + '_' + seq_set_name)
     mutation_counts_out_path = os.path.join(mut_dir, 'mutation_counts_' + seq_set_name)
-    # don't redo a file if it's already done
-    if os.path.isfile(out_name): continue
     print(f'subsetting {seq_set_name} ({i+1}/{num_sets})', flush=True)
     # record time for first file
     if i == 0: start_time = time.time()
     first_seq = True
     with open(seq_set) as in_file:
         for line in in_file:
-            # wuhan refseq is first seq and doesn't have an epi-id
             seq = line.strip().split('\t')
             seq_id, seq = seq[0], seq[1:]
+            # wuhan refseq is first seq and doesn't have an epi-id
+            # write it every time then subset the other seqs
             if first_seq:
                 first_seq = False
                 with open(out_name, 'a') as out_file:
@@ -86,7 +88,7 @@ for i, seq_set in enumerate(tsv_names):
             else:
                 seq_id = re.search('(EPI_ISL_\d+)', seq_id).groups(0)[0]
                 # check if the epi-id is in the pre-made epi-id whitelist
-                if not seq_id in seq_id_whitelist:
+                if seq_id not in seq_id_whitelist:
                     continue
                 else:
                     with open(out_name, 'a') as out_file:

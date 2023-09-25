@@ -84,7 +84,7 @@ comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
 
-for i, seq_set in enumerate(tsv_names):
+for i, seq_set in enumerate(tsv_paths):
     # distribute across ranks
     if i % size != rank: continue
     _, seq_set_name = os.path.split(seq_set)
