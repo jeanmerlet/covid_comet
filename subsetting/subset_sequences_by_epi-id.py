@@ -58,7 +58,6 @@ rank = comm.Get_rank()
 
 start = time.time()
 for i, seq_set in enumerate(tsv_names):
-    if i != 0: continue
     # distribute across ranks
     if i % size != rank: continue
     _, seq_set_name = os.path.split(seq_set)

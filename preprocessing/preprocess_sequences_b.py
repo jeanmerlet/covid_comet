@@ -40,6 +40,7 @@ encoding_scheme = pd.Series(encoding_scheme)
 
 mutation_counts = pd.read_csv(counts_path, sep='\t', index_col=0, header=None)
 pass_idx = mutation_counts.loc['valid', :].values == 'True'
+correct_seq_len = len(pass_idx)
 passed_mut_counts = mutation_counts.loc[:, pass_idx]
 passed_mut_counts = passed_mut_counts.iloc[:-1, :].astype('float').astype(np.int32)
 passed_mut_counts.columns = np.arange(len(passed_mut_counts.columns))
@@ -100,6 +101,7 @@ for i, seq_set in enumerate(tsv_paths):
         for line in in_file:
             seq = line.strip().lower().split('\t')
             seq_id, seq = seq[0], np.array(seq[1:])
+            if len(seq) != correct_seq_len: continue
             seq = seq[pass_idx]
             seq_header = None
             if first_seq:
