@@ -13,7 +13,7 @@ for i, seq_id in enumerate(meta.index.values):
     date, loc = meta.loc[seq_id, :].values
     split_loc = loc.split('/')
     if (
-           len(split_loc) > 2 and split_loc[1].strip() == 'USA' and
+           len(split_loc) > 3 and split_loc[1].strip() == 'USA' and
            split_loc[2].strip() == 'California'
        ):
         if len(meta.loc[seq_id, 'Collection date']) >= 7:
