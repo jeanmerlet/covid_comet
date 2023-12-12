@@ -18,7 +18,7 @@ def txt_to_tsv(in_path, out_path):
             _, low_high1, _, low_high2, seq_id1, seq_id2, score = line.strip().split(' ')
             if low_high1 == '1' and low_high2 == '1':
                 with open(out_path, 'a') as out_file:
-                    out_file.write('\t'.join([seq_id1, seq_id2, score]) + '\n')
+                    out_file.write('\t'.join([seq_id1[:-2], seq_id2[:-2], score]) + '\n')
 
 
 comm = MPI.COMM_WORLD
